@@ -1,5 +1,6 @@
 package org.pondar.pacmankotlin
 
+import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -35,30 +37,25 @@ class MainActivity : AppCompatActivity() {
         binding.gameView.setGame(game)
         game.newGame()
 
-//        binding.moveRight.setOnClickListener {
-//            game.movePacmanRight(10)
-//
-//        }
         view.setOnTouchListener(object : OnSwipeTouchListener(this@MainActivity) {
 
-            override fun onSwipeTop() {
-//                super.onSwipeTop()
-                game.movePacmanUp(15)
-            }
-
             override fun onSwipeBottom() {
-//                super.onSwipeBottom()
-                game.movePacmanDown(15)
+                super.onSwipeBottom()
+                game.movePacman(0)
+            }
+            override fun onSwipeTop() {
+                super.onSwipeTop()
+                game.movePacman(1)
             }
 
             override fun onSwipeLeft() {
-//                super.onSwipeLeft()
-                game.movePacmanLeft(15)
+                super.onSwipeLeft()
+                game.movePacman(2)
             }
 
             override fun onSwipeRight() {
-//                super.onSwipeRight()
-                game.movePacmanRight(15)
+                super.onSwipeRight()
+                game.movePacman(3)
             }
         })
     }
