@@ -3,8 +3,7 @@ package org.pondar.pacmankotlin
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Handler
-import android.os.Looper
+import android.graphics.Matrix
 import android.widget.TextView
 import java.util.*
 
@@ -26,6 +25,9 @@ class Game(private var context: Context, view: TextView) {
     var pacx: Int = 0
     var pacy: Int = 0
 
+    // save rotate value
+    var currentRotateValue = 0F
+
     // move distance
     var pacMoveDistance = 15
 
@@ -45,8 +47,11 @@ class Game(private var context: Context, view: TextView) {
     //The init code is called when we create a new Game class.
     //it's a good place to initialize our images.
     init {
-        pacBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pacman)
+        var pacBitmap2 = BitmapFactory.decodeResource(context.resources, R.drawable.pacman)
+        pacBitmap = Bitmap.createScaledBitmap(pacBitmap2, 80, 80, false)
+
     }
+
 
     fun setGameView(view: GameView) {
         this.gameView = view
@@ -68,6 +73,7 @@ class Game(private var context: Context, view: TextView) {
         points = 0
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
         stopPacmanMovement()
+        pacBitmap = rotateBitmap(pacBitmap, 0F)
         gameView.invalidate() //redraw screen
 
     }
@@ -79,6 +85,14 @@ class Game(private var context: Context, view: TextView) {
 
     fun movePacman(pacDir: Int) {
         stopPacmanMovement()
+
+        when (pacDir) {
+            0 -> pacBitmap = rotateBitmap(pacBitmap, 90F)
+            1 -> pacBitmap = rotateBitmap(pacBitmap, 270F)
+            2 -> pacBitmap = rotateBitmap(pacBitmap, 180F)
+            3 -> pacBitmap = rotateBitmap(pacBitmap, 0F)
+        }
+
         timer = Timer()
         timer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
@@ -94,14 +108,26 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun stopPacmanMovement() {
-
         timer?.cancel()
         timer?.purge()
     }
 
+    fun rotateBitmap(source: Bitmap, angle: Float): Bitmap {
+        if (currentRotateValue == angle) {
+            return pacBitmap
+        }
+        var rotateValue = angle - currentRotateValue
+        currentRotateValue = angle
+
+        val matrix = Matrix()
+        matrix.preRotate(rotateValue)
+        return Bitmap.createBitmap(
+            source, 0, 0, source.width, source.height, matrix, true
+        )
+    }
+
 
     fun movePacmanRight() {
-        //still within our boundaries?
         if (pacx + pacMoveDistance + pacBitmap.width < w) {
             pacx = pacx + pacMoveDistance
             doCollisionCheck()
@@ -110,16 +136,15 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun movePacmanLeft() {
-        //still within our boundaries?
         if (pacx - pacMoveDistance > 0) {
             pacx = pacx - pacMoveDistance
             doCollisionCheck()
             gameView.invalidate()
+
         }
     }
 
     fun movePacmanUp() {
-        //still within our boundaries?
         if (pacy - pacMoveDistance > 0) {
             pacy = pacy - pacMoveDistance
             doCollisionCheck()
@@ -128,7 +153,6 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun movePacmanDown() {
-        //still within our boundaries?
         if (pacy + pacMoveDistance + pacBitmap.height < h) {
             pacy = pacy + pacMoveDistance
             doCollisionCheck()
