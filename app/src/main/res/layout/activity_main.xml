@@ -5,11 +5,6 @@
     android:layout_height="match_parent"
     tools:context="org.pondar.pacmankotlin.MainActivity" >
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/move_right"
-        android:id="@+id/moveRight"/>
 
     <TextView
         android:id="@+id/pointsView"

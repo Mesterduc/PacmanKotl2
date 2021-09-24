@@ -35,10 +35,32 @@ class MainActivity : AppCompatActivity() {
         binding.gameView.setGame(game)
         game.newGame()
 
-        binding.moveRight.setOnClickListener {
-            game.movePacmanRight(10)
+//        binding.moveRight.setOnClickListener {
+//            game.movePacmanRight(10)
+//
+//        }
+        view.setOnTouchListener(object : OnSwipeTouchListener(this@MainActivity) {
 
-        }
+            override fun onSwipeTop() {
+//                super.onSwipeTop()
+                game.movePacmanUp(15)
+            }
+
+            override fun onSwipeBottom() {
+//                super.onSwipeBottom()
+                game.movePacmanDown(15)
+            }
+
+            override fun onSwipeLeft() {
+//                super.onSwipeLeft()
+                game.movePacmanLeft(15)
+            }
+
+            override fun onSwipeRight() {
+//                super.onSwipeRight()
+                game.movePacmanRight(15)
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
