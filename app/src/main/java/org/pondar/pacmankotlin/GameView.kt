@@ -29,7 +29,11 @@ class GameView : View {
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
 
     //In the onDraw we put all our code that should be
     //drawn whenever we update the screen.
@@ -44,7 +48,7 @@ class GameView : View {
         //are the coins initiazlied?
         //if not initizlise them
         if (!(game.coinsInitialized))
-            game.initializeGoldcoins()
+            game.initializeGoldcoins(10)
 
 
         //Making a new paint object
@@ -52,11 +56,19 @@ class GameView : View {
         canvas.drawColor(Color.WHITE) //clear entire canvas to white color
 
         //draw the pacman
-        canvas.drawBitmap(game.pacBitmap, game.pacx.toFloat(),
-                game.pacy.toFloat(), paint)
+        canvas.drawBitmap(
+            game.pacBitmap, game.pacx.toFloat(),
+            game.pacy.toFloat(), paint
+        )
 
         //TODO loop through the list of goldcoins and draw them here
-
+//        canvas.drawBitmap(game.coin, 700F,
+//            700F, paint)
+        game.coins.forEach {
+            if (!it.isTaken) {
+                canvas.drawBitmap(game.coin, it.posX.toFloat(), it.posY.toFloat(), paint)
+            }
+        }
 
         game.doCollisionCheck()
         super.onDraw(canvas)
