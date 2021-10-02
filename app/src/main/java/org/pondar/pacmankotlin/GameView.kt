@@ -57,8 +57,8 @@ class GameView : View {
 
         //draw the pacman
         canvas.drawBitmap(
-            game.pacBitmap, game.pacx.toFloat(),
-            game.pacy.toFloat(), paint
+            game.pacBitmap, game.pacman.posX.toFloat(),
+            game.pacman.posY.toFloat(), paint
         )
 
         //TODO loop through the list of goldcoins and draw them here
@@ -68,6 +68,14 @@ class GameView : View {
             if (!it.isTaken) {
                 canvas.drawBitmap(game.coin, it.posX.toFloat(), it.posY.toFloat(), paint)
             }
+        }
+        game.enemies.forEach {
+                canvas.drawBitmap(game.enemy, it.posX.toFloat(), it.posY.toFloat(), paint)
+//            if (it.posX - game.moveDistance > 0) {
+//                it.posY -= 15
+//            }
+
+
         }
 
         game.doCollisionCheck()

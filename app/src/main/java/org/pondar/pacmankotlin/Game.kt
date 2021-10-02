@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.widget.TextView
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.*
 
 
@@ -23,16 +24,21 @@ class Game(private var context: Context, view: TextView) {
 
     //bitmap of the pacman
     var pacBitmap: Bitmap
-    var pacx: Int = 0
-    var pacy: Int = 0
+    var pacman = Pacman(0, 0)
+//    var pacx: Int = 0
+//    var pacy: Int = 0
+
+
+    // pause or running
     var running = true
 
     // save rotate value
     var currentRotateValue = 0F
 
     // move distance
-    var pacMoveDistance = 15
+    var moveDistance = 15
 
+    // coin
     var coin: Bitmap
     var coinCount = 0
 
@@ -41,6 +47,12 @@ class Game(private var context: Context, view: TextView) {
 
     //the list of goldcoins - initially empty
     var coins = ArrayList<GoldCoin>()
+
+    // enemie
+    var enemy: Bitmap
+    var enemies = ArrayList<Enemies>()
+    var enemyCount = 0
+
 
     //a reference to the gameview
     private lateinit var gameView: GameView
@@ -57,13 +69,15 @@ class Game(private var context: Context, view: TextView) {
         var coin2 = BitmapFactory.decodeResource(context.resources, R.drawable.coin)
         coin = Bitmap.createScaledBitmap(coin2, 25, 25, false)
 
+        var enemy2 = BitmapFactory.decodeResource(context.resources, R.drawable.enemy)
+        enemy = Bitmap.createScaledBitmap(enemy2, 85, 85, false)
+
     }
 
     fun setGameView(view: GameView) {
         this.gameView = view
     }
 
-    //TODO initialize goldcoins also here
     fun initializeGoldcoins(numberOfCoins: Int) {
         //DO Stuff to initialize the array list with some coins.
         coins = ArrayList<GoldCoin>()
@@ -75,11 +89,20 @@ class Game(private var context: Context, view: TextView) {
         coinsInitialized = true
     }
 
+    fun initializeEnemies() {
+//        var x = w/2
+//        var y = h/2
+        var x = (0..w - 100).random();
+        var y = (0..h - 100).random();
+        enemies.add(Enemies(x, y))
+    }
+
     fun newGame() {
-        pacx = 400
-        pacy = 400
+        pacman.posX = 400
+        pacman.posY = 400
         coinsInitialized = false
         points = 0
+        enemies = ArrayList<Enemies>()
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
         stopPacmanMovement()
         pacBitmap = rotateBitmap(pacBitmap, 0F)
@@ -111,9 +134,48 @@ class Game(private var context: Context, view: TextView) {
                         2 -> movePacmanLeft()
                         3 -> movePacmanRight()
                     }
+                    doCollisionCheck()
+
+                    gameView.invalidate()
                 }
             }
         }, 0, 50)
+
+    }
+
+    fun moveEnemies() {
+        if (enemyCount <= 5) {
+            var random = 0
+            var timer2 = Timer()
+            timer2?.scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    if (running) {
+                        random = (0..3).random()
+                    }
+                }
+            }, 0, 2000)
+
+
+            enemies.forEach {
+
+                if (!it.hej) {
+                    it.hej = true
+                    timer2?.scheduleAtFixedRate(object : TimerTask() {
+                        override fun run() {
+                            if (running) {
+                                when (random) {
+                                    0 -> borderCollisionCheck(it, 0)
+                                    1 -> borderCollisionCheck(it, 1)
+                                    2 -> borderCollisionCheck(it, 2)
+                                    3 -> borderCollisionCheck(it, 3)
+                                }
+                                gameView.invalidate()
+                            }
+                        }
+                    }, 0, 200)
+                }
+            }
+        }
 
     }
 
@@ -136,35 +198,40 @@ class Game(private var context: Context, view: TextView) {
         )
     }
 
+    fun borderCollisionCheck(obj: Enemies, direction: Int) {
+        when (direction) {
+            // down
+            0 -> if (obj.posY + moveDistance + enemy.height < h) obj.posY += moveDistance
+            // up
+            1 -> if (obj.posY - moveDistance > 0) obj.posY -= moveDistance
+            // left
+            2 -> if (obj.posX - moveDistance > 0) obj.posX -= moveDistance
+            // right
+            3 -> if (obj.posX + moveDistance + enemy.width < w) obj.posX += moveDistance
+        }
+    }
+
     fun movePacmanRight() {
-        if (pacx + pacMoveDistance + pacBitmap.width < w) {
-            pacx = pacx + pacMoveDistance
-            doCollisionCheck()
-            gameView.invalidate()
+        if (pacman.posX + moveDistance + pacBitmap.width < w) {
+            pacman.posX += moveDistance
         }
     }
 
     fun movePacmanLeft() {
-        if (pacx - pacMoveDistance > 0) {
-            pacx = pacx - pacMoveDistance
-            doCollisionCheck()
-            gameView.invalidate()
+        if (pacman.posX - moveDistance > 0) {
+            pacman.posX -= moveDistance
         }
     }
 
     fun movePacmanUp() {
-        if (pacy - pacMoveDistance > 0) {
-            pacy = pacy - pacMoveDistance
-            doCollisionCheck()
-            gameView.invalidate()
+        if (pacman.posY - moveDistance > 0) {
+            pacman.posY -= moveDistance
         }
     }
 
     fun movePacmanDown() {
-        if (pacy + pacMoveDistance + pacBitmap.height < h) {
-            pacy = pacy + pacMoveDistance
-            doCollisionCheck()
-            gameView.invalidate()
+        if (pacman.posY + moveDistance + pacBitmap.height < h) {
+            pacman.posY += moveDistance
         }
     }
 
@@ -176,10 +243,15 @@ class Game(private var context: Context, view: TextView) {
     fun doCollisionCheck() {
         coins.forEach {
             if (!it.isTaken) {
-                var sammenlignX = (it.posX - (pacx + (pacBitmap.width / 2))).toDouble().pow(2)
-                var sammenlignY = (it.posY - (pacy + (pacBitmap.height / 2))).toDouble().pow(2)
-                var test = sammenlignX + sammenlignY
-                var distance = sqrt(test)
+                var distance =
+                    collisionFormel(
+                        pacman.posX,
+                        pacman.posY,
+                        it.posX,
+                        it.posY,
+                        pacBitmap.height,
+                        pacBitmap.width
+                    )
                 if (distance < 60) {
                     coinCount++
                     points += 10
@@ -190,13 +262,49 @@ class Game(private var context: Context, view: TextView) {
                     gameView.invalidate()
                 }
             }
-            if (coinCount == 10) {
+            if (coinCount == 1) {
                 coinsInitialized = false
                 coinCount = 0
+                initializeEnemies()
+                enemyCount++
+
+                moveEnemies()
+
             }
-
         }
+        enemies.forEach {
+            var distance =
+                collisionFormel(
+                    pacman.posX,
+                    pacman.posY,
+                    it.posX,
+                    it.posY,
+                    pacBitmap.height,
+                    pacBitmap.width
+                )
+            if (distance < 60) {
+                gameView.post(Runnable {
+                    newGame()
+                })
+                gameView.invalidate()
+            }
+        }
+    }
 
+    fun collisionFormel(
+        pacX: Int,
+        pacY: Int,
+        objX: Int,
+        objY: Int,
+        height: Int,
+        width: Int
+    ): Double {
+        var sammenlignX = (objX - (pacX + (width / 2))).toDouble().pow(2)
+        var sammenlignY = (objY - (pacY + (height / 2))).toDouble().pow(2)
+        var test = sammenlignX + sammenlignY
+        var distance = sqrt(test)
+
+        return distance
     }
 
 
