@@ -25,6 +25,7 @@ class Game(private var context: Context, view: TextView) {
     var pacBitmap: Bitmap
     var pacx: Int = 0
     var pacy: Int = 0
+    var running = true
 
     // save rotate value
     var currentRotateValue = 0F
@@ -33,6 +34,7 @@ class Game(private var context: Context, view: TextView) {
     var pacMoveDistance = 15
 
     var coin: Bitmap
+    var coinCount = 0
 
     //did we initialize the coins?
     var coinsInitialized = false
@@ -75,10 +77,9 @@ class Game(private var context: Context, view: TextView) {
 
     fun newGame() {
         pacx = 400
-        pacy = 400 //just some starting coordinates - you can change this.
-        //reset the points
+        pacy = 400
         coinsInitialized = false
-//        points = 0
+        points = 0
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
         stopPacmanMovement()
         pacBitmap = rotateBitmap(pacBitmap, 0F)
@@ -92,7 +93,6 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun movePacman(pacDir: Int) {
-//        points  +=  10
         stopPacmanMovement()
         when (pacDir) {
             0 -> pacBitmap = rotateBitmap(pacBitmap, 90F)
@@ -104,12 +104,13 @@ class Game(private var context: Context, view: TextView) {
         timer = Timer()
         timer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-
-                when (pacDir) {
-                    0 -> movePacmanDown()
-                    1 -> movePacmanUp()
-                    2 -> movePacmanLeft()
-                    3 -> movePacmanRight()
+                if (running) {
+                    when (pacDir) {
+                        0 -> movePacmanDown()
+                        1 -> movePacmanUp()
+                        2 -> movePacmanLeft()
+                        3 -> movePacmanRight()
+                    }
                 }
             }
         }, 0, 50)
@@ -135,12 +136,7 @@ class Game(private var context: Context, view: TextView) {
         )
     }
 
-
     fun movePacmanRight() {
-//            points  +=  10
-//            pointsView.invalidate()
-//        gameView.invalidate()
-//        doCollisionCheck()
         if (pacx + pacMoveDistance + pacBitmap.width < w) {
             pacx = pacx + pacMoveDistance
             doCollisionCheck()
@@ -149,17 +145,14 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun movePacmanLeft() {
-//        doCollisionCheck()
         if (pacx - pacMoveDistance > 0) {
             pacx = pacx - pacMoveDistance
             doCollisionCheck()
             gameView.invalidate()
-
         }
     }
 
     fun movePacmanUp() {
-//        doCollisionCheck()
         if (pacy - pacMoveDistance > 0) {
             pacy = pacy - pacMoveDistance
             doCollisionCheck()
@@ -168,7 +161,6 @@ class Game(private var context: Context, view: TextView) {
     }
 
     fun movePacmanDown() {
-//        doCollisionCheck()
         if (pacy + pacMoveDistance + pacBitmap.height < h) {
             pacy = pacy + pacMoveDistance
             doCollisionCheck()
@@ -183,21 +175,27 @@ class Game(private var context: Context, view: TextView) {
     //check each of them for a collision with the pacman
     fun doCollisionCheck() {
         coins.forEach {
-            if(!it.isTaken) {
-                var sammenlignX = (it.posX - pacx).toDouble().pow(2)
-                var sammenlignY = (it.posY - pacy).toDouble().pow(2)
+            if (!it.isTaken) {
+                var sammenlignX = (it.posX - (pacx + (pacBitmap.width / 2))).toDouble().pow(2)
+                var sammenlignY = (it.posY - (pacy + (pacBitmap.height / 2))).toDouble().pow(2)
                 var test = sammenlignX + sammenlignY
-                var hej = sqrt(test)
-                if (hej < 75) {
+                var distance = sqrt(test)
+                if (distance < 60) {
+                    coinCount++
                     points += 10
                     it.isTaken = true
+                    pointsView.post(Runnable {
+                        pointsView.text = "${context.resources.getString(R.string.points)} $points"
+                    })
                     gameView.invalidate()
-                    pointsView.invalidate()
-
                 }
             }
+            if (coinCount == 10) {
+                coinsInitialized = false
+                coinCount = 0
+            }
+
         }
-//        points += 10
 
     }
 

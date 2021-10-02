@@ -9,13 +9,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import org.pondar.pacmankotlin.databinding.ActivityMainBinding
+import org.pondar.pacmankotlin.databinding.ActivityMainBinding.inflate
 
 class MainActivity : AppCompatActivity() {
 
     //reference to the game class.
     private lateinit var game: Game
-    private lateinit var binding : ActivityMainBinding
-
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding2: MainActivity
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -23,19 +24,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
+//        MainActivity.inflate(layoutInflater)
+//        binding2 = MainActivity.inflate(layoutInflater)
+
         val view = binding.root
         setContentView(view)
         //makes sure it always runs in portrait mode - will cost a warning
         //but this is want we want!
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        Log.d("onCreate","Oncreate called")
+        Log.d("onCreate", "Oncreate called")
 
-        game = Game(this,binding.pointsView)
+        game = Game(this, binding.pointsView)
 
         //intialize the game view clas and game class
         game.setGameView(binding.gameView)
         binding.gameView.setGame(game)
         game.newGame()
+
 
         view.setOnTouchListener(object : OnSwipeTouchListener(this@MainActivity) {
 
@@ -43,6 +48,7 @@ class MainActivity : AppCompatActivity() {
                 super.onSwipeBottom()
                 game.movePacman(0)
             }
+
             override fun onSwipeTop() {
                 super.onSwipeTop()
                 game.movePacman(1)
@@ -78,6 +84,12 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "New Game clicked", Toast.LENGTH_LONG).show()
             game.newGame()
             return true
+        } else if (id == R.id.action_pauseGame) {
+            game.running = !game.running
+            if(game.running)  item.title = "Pause" else item.title = "Play"
+
+
+
         }
         return super.onOptionsItemSelected(item)
     }

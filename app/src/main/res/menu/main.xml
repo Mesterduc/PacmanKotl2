@@ -4,6 +4,11 @@
     tools:context="org.example.canvasdemo.MainActivity">
 
     <item
+        android:id="@+id/action_pauseGame"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:title="@string/pauseGame"/>
+    <item
         android:id="@+id/action_newGame"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
