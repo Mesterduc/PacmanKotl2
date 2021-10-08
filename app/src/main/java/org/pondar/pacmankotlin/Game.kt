@@ -21,6 +21,7 @@ class Game(private var context: Context, view: TextView) {
     private var points: Int = 0
 
     var timer: Timer? = null
+    var timer2: Timer? = null
 
     //bitmap of the pacman
     var pacBitmap: Bitmap
@@ -101,12 +102,18 @@ class Game(private var context: Context, view: TextView) {
         pacman.posX = 400
         pacman.posY = 400
         coinsInitialized = false
+        enemyCount  = 0
         points = 0
         enemies = ArrayList<Enemies>()
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
         stopPacmanMovement()
         pacBitmap = rotateBitmap(pacBitmap, 0F)
         gameView.invalidate() //redraw screen
+        if(timer2 != null){
+
+        timer2?.cancel()
+        timer2?.purge()
+        }
 
     }
 
@@ -146,7 +153,7 @@ class Game(private var context: Context, view: TextView) {
     fun moveEnemies() {
         if (enemyCount <= 5) {
             var random = 0
-            var timer2 = Timer()
+            timer2 = Timer()
             timer2?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     if (running) {
@@ -172,7 +179,7 @@ class Game(private var context: Context, view: TextView) {
                                 gameView.invalidate()
                             }
                         }
-                    }, 0, 200)
+                    }, 0, 100)
                 }
             }
         }
@@ -262,11 +269,13 @@ class Game(private var context: Context, view: TextView) {
                     gameView.invalidate()
                 }
             }
-            if (coinCount == 1) {
+            if (coinCount == 5) {
                 coinsInitialized = false
                 coinCount = 0
+                if(enemyCount < 5 ){
                 initializeEnemies()
-                enemyCount++
+                    enemyCount++
+                }
 
                 moveEnemies()
 
@@ -282,7 +291,7 @@ class Game(private var context: Context, view: TextView) {
                     pacBitmap.height,
                     pacBitmap.width
                 )
-            if (distance < 60) {
+            if (distance < 70) {
                 gameView.post(Runnable {
                     newGame()
                 })
