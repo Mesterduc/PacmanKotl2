@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.fragment.app.FragmentTransaction
 
 
 //note we now create our own view class that extends the built-in View class

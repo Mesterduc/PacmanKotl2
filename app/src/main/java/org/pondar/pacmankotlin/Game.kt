@@ -1,10 +1,10 @@
 package org.pondar.pacmankotlin
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.widget.TextView
+import androidx.fragment.app.FragmentActivity
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.*
@@ -15,12 +15,12 @@ import kotlin.math.*
  * This class should contain all your game logic
  */
 
-class Game(private var context: Context, view: TextView, timeLeft: TextView) {
+class Game(private var context: MainActivity, view: TextView, timeLeft: TextView) {
 
     private var pointsView: TextView = view
-    private var points: Int = 0
+    var points: Int = 0
     private var timeLeftView: TextView = timeLeft
-    private var time: Int = 0
+    var time: Int = -10
 
     var timer: Timer? = null
     var timer2: Timer? = null
@@ -30,8 +30,8 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
     //bitmap of the pacman
     var pacBitmap: Bitmap
     var pacman = Pacman(0, 0)
-//    var pacx: Int = 0
-//    var pacy: Int = 0
+
+    var score = ArrayList<Int>()
 
 
     // pause or running
@@ -95,8 +95,6 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
     }
 
     fun initializeEnemies() {
-//        var x = w/2
-//        var y = h/2
         var x = (0..w - 100).random();
         var y = (0..h - 100).random();
         enemies.add(Enemies(x, y))
@@ -108,13 +106,16 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
         coinsInitialized = false
         enemyCount = 0
         points = 0
+        coinCount = 0
         enemies = ArrayList<Enemies>()
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
         timeLeftView.text = "${context.resources.getString(R.string.timeLeft)} $time"
         stopPacmanMovement()
         pacBitmap = rotateBitmap(pacBitmap, 0F)
         gameView.invalidate() //redraw screen
-        if (timer2 != null) {
+        if (timer != null) {
+            timer?.cancel()
+            timer?.purge()
             timer2?.cancel()
             timer2?.purge()
             timer3?.cancel()
@@ -122,10 +123,21 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
             timer4?.cancel()
             timer4?.purge()
         }
-        time = 5
+        time = 30
         gameTimer()
         moveEnemies()
 
+    }
+
+    fun endAllTimers() {
+        timer?.cancel()
+        timer?.purge()
+        timer2?.cancel()
+        timer2?.purge()
+        timer3?.cancel()
+        timer3?.purge()
+        timer4?.cancel()
+        timer4?.purge()
     }
 
     fun gameTimer() {
@@ -138,7 +150,12 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
                         timeLeftView.text =
                             "${context.resources.getString(R.string.timeLeft)} $time"
                         if (time == 0) {
-                            newGame()
+                            addHighScorePoints()
+                            highScore(this@Game, context, score).show(
+                                (context as FragmentActivity).supportFragmentManager,
+                                "asd"
+                            )
+                            endAllTimers()
                         }
                     })
 
@@ -146,6 +163,25 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
                 }
             }
         }, 0, 1000)
+
+    }
+
+    fun addHighScorePoints() {
+        if (score.count() < 5) {
+            score.add(points)
+        } else {
+            var index = 0
+            var lowest = points
+            score.forEachIndexed { i, element ->
+                if (element < lowest) {
+                    lowest = element
+                    index = i
+                }
+            }
+            if (index != 0) {
+                score[index] = points
+            }
+        }
 
     }
 
@@ -178,21 +214,21 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
                     gameView.invalidate()
                 }
             }
-        }, 0, 50)
+        }, 0, 75)
 
     }
 
     fun moveEnemies() {
         if (enemyCount <= 5) {
-            var random = 0
             timer3 = Timer()
             timer3?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     if (running) {
                         enemies.forEach {
-                            random = (0..3).random()
+                            var random = (0..3).random()
                             it.direction = random
                         }
+
                     }
                 }
             }, 0, 2300)
@@ -208,7 +244,6 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
                 }
             }, 0, 100)
         }
-
     }
 
     fun stopPacmanMovement() {
@@ -305,7 +340,8 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
 
             }
         }
-        enemies.forEach {
+        for(it in  enemies) {
+//        enemies.forEach  {
             var distance =
                 collisionFormel(
                     pacman.posX,
@@ -315,11 +351,21 @@ class Game(private var context: Context, view: TextView, timeLeft: TextView) {
                     pacBitmap.height,
                     pacBitmap.width
                 )
-            if (distance < 70) {
-                gameView.post(Runnable {
-                    newGame()
-                })
-                gameView.invalidate()
+
+            if (distance < 70.00) {
+//                gameView.post(Runnable {
+                    endAllTimers()
+                    addHighScorePoints()
+                    highScore(this@Game, context, score).show(
+                        (context as FragmentActivity).supportFragmentManager,
+                        "asd"
+                    )
+                break
+//                points++
+//                })
+//                gameView.invalidate()
+//                returnlit@
+
             }
         }
     }

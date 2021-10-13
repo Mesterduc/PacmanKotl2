@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="10dp"
+    android:padding="20dp"
     android:background="#DDDDDD">
 
     <TextView
@@ -34,7 +35,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/highScoreTitle"
-        android:orientation="horizontal" />
+        android:orientation="vertical" />
 
     <Button
         android:id="@+id/playAgain"

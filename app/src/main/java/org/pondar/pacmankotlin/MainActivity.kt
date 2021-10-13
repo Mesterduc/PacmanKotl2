@@ -7,10 +7,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
+import kotlinx.android.synthetic.main.gameover_dialog.view.*
 import org.pondar.pacmankotlin.databinding.ActivityMainBinding
-import org.pondar.pacmankotlin.databinding.ActivityMainBinding.bind
-import org.pondar.pacmankotlin.databinding.ActivityMainBinding.inflate
+import org.pondar.pacmankotlin.databinding.GameoverDialogBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         game.setGameView(binding.gameView)
         binding.gameView.setGame(game)
         game.newGame()
-
 
         view.setOnTouchListener(object : OnSwipeTouchListener(this@MainActivity) {
 
@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         } else if (id == R.id.action_pauseGame) {
             game.running = !game.running
             if (game.running) item.title = "Pause" else item.title = "Play"
+
 
 
         }
