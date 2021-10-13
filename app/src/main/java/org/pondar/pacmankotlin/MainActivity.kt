@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import org.pondar.pacmankotlin.databinding.ActivityMainBinding
+import org.pondar.pacmankotlin.databinding.ActivityMainBinding.bind
 import org.pondar.pacmankotlin.databinding.ActivityMainBinding.inflate
 
 class MainActivity : AppCompatActivity() {
@@ -16,7 +17,6 @@ class MainActivity : AppCompatActivity() {
     //reference to the game class.
     private lateinit var game: Game
     private lateinit var binding: ActivityMainBinding
-    private lateinit var binding2: MainActivity
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -24,8 +24,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-//        MainActivity.inflate(layoutInflater)
-//        binding2 = MainActivity.inflate(layoutInflater)
 
         val view = binding.root
         setContentView(view)
@@ -34,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         Log.d("onCreate", "Oncreate called")
 
-        game = Game(this, binding.pointsView)
+        game = Game(this, binding.pointsView, binding.timeLeftView)
 
         //intialize the game view clas and game class
         game.setGameView(binding.gameView)
@@ -86,8 +84,7 @@ class MainActivity : AppCompatActivity() {
             return true
         } else if (id == R.id.action_pauseGame) {
             game.running = !game.running
-            if(game.running)  item.title = "Pause" else item.title = "Play"
-
+            if (game.running) item.title = "Pause" else item.title = "Play"
 
 
         }

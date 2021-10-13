@@ -75,7 +75,6 @@ class GameView : View {
 //                it.posY -= 15
 //            }
 
-
         }
 
         game.doCollisionCheck()

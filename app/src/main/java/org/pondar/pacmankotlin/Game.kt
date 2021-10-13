@@ -15,13 +15,17 @@ import kotlin.math.*
  * This class should contain all your game logic
  */
 
-class Game(private var context: Context, view: TextView) {
+class Game(private var context: Context, view: TextView, timeLeft: TextView) {
 
     private var pointsView: TextView = view
     private var points: Int = 0
+    private var timeLeftView: TextView = timeLeft
+    private var time: Int = 0
 
     var timer: Timer? = null
     var timer2: Timer? = null
+    var timer3: Timer? = null
+    var timer4: Timer? = null
 
     //bitmap of the pacman
     var pacBitmap: Bitmap
@@ -102,18 +106,46 @@ class Game(private var context: Context, view: TextView) {
         pacman.posX = 400
         pacman.posY = 400
         coinsInitialized = false
-        enemyCount  = 0
+        enemyCount = 0
         points = 0
         enemies = ArrayList<Enemies>()
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
+        timeLeftView.text = "${context.resources.getString(R.string.timeLeft)} $time"
         stopPacmanMovement()
         pacBitmap = rotateBitmap(pacBitmap, 0F)
         gameView.invalidate() //redraw screen
-        if(timer2 != null){
-
-        timer2?.cancel()
-        timer2?.purge()
+        if (timer2 != null) {
+            timer2?.cancel()
+            timer2?.purge()
+            timer3?.cancel()
+            timer3?.purge()
+            timer4?.cancel()
+            timer4?.purge()
         }
+        time = 5
+        gameTimer()
+        moveEnemies()
+
+    }
+
+    fun gameTimer() {
+        timer4 = Timer()
+        timer4?.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                if (running) {
+                    time--
+                    pointsView.post(Runnable {
+                        timeLeftView.text =
+                            "${context.resources.getString(R.string.timeLeft)} $time"
+                        if (time == 0) {
+                            newGame()
+                        }
+                    })
+
+                    timeLeftView.invalidate()
+                }
+            }
+        }, 0, 1000)
 
     }
 
@@ -153,35 +185,28 @@ class Game(private var context: Context, view: TextView) {
     fun moveEnemies() {
         if (enemyCount <= 5) {
             var random = 0
+            timer3 = Timer()
+            timer3?.scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    if (running) {
+                        enemies.forEach {
+                            random = (0..3).random()
+                            it.direction = random
+                        }
+                    }
+                }
+            }, 0, 2300)
             timer2 = Timer()
             timer2?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
-                    if (running) {
-                        random = (0..3).random()
+                    enemies.forEach {
+                        if (running) {
+                            borderCollisionCheck(it, it.direction)
+                            gameView.invalidate()
+                        }
                     }
                 }
-            }, 0, 2000)
-
-
-            enemies.forEach {
-
-                if (!it.hej) {
-                    it.hej = true
-                    timer2?.scheduleAtFixedRate(object : TimerTask() {
-                        override fun run() {
-                            if (running) {
-                                when (random) {
-                                    0 -> borderCollisionCheck(it, 0)
-                                    1 -> borderCollisionCheck(it, 1)
-                                    2 -> borderCollisionCheck(it, 2)
-                                    3 -> borderCollisionCheck(it, 3)
-                                }
-                                gameView.invalidate()
-                            }
-                        }
-                    }, 0, 100)
-                }
-            }
+            }, 0, 100)
         }
 
     }
@@ -266,18 +291,17 @@ class Game(private var context: Context, view: TextView) {
                     pointsView.post(Runnable {
                         pointsView.text = "${context.resources.getString(R.string.points)} $points"
                     })
-                    gameView.invalidate()
+                    pointsView.invalidate()
                 }
             }
-            if (coinCount == 5) {
+            if (coinCount == 1) {
                 coinsInitialized = false
                 coinCount = 0
-                if(enemyCount < 5 ){
-                initializeEnemies()
+                if (enemyCount < 5) {
+                    initializeEnemies()
                     enemyCount++
                 }
 
-                moveEnemies()
 
             }
         }
