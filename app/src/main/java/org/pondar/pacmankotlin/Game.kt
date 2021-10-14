@@ -214,7 +214,7 @@ class Game(private var context: MainActivity, view: TextView, timeLeft: TextView
                     gameView.invalidate()
                 }
             }
-        }, 0, 75)
+        }, 0, 50)
 
     }
 
@@ -329,7 +329,7 @@ class Game(private var context: MainActivity, view: TextView, timeLeft: TextView
                     pointsView.invalidate()
                 }
             }
-            if (coinCount == 1) {
+            if (coinCount == 3) {
                 coinsInitialized = false
                 coinCount = 0
                 if (enemyCount < 5) {
